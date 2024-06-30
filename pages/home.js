@@ -8,23 +8,16 @@ function Home() {
   const [store, setStore] = useState([]);
 
   const addMoney = () => {
-    router.push('/addmoney');
+    router.push(`/addmoney?me=${me}`);
   };
 
   const history = () => {
-    router.push('/history');
+    router.push(`/history?me=${me}`);
   };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
-  const transactions = [
-    { id: 'TRX001', amount: '-₹50.00', date: '2024-06-28', time: '10:30 AM' },
-    { id: 'TRX002', amount: '+₹200.00', date: '2024-06-27', time: '02:15 PM' },
-    { id: 'TRX003', amount: '-₹120.00', date: '2024-06-26', time: '11:45 AM' },
-    { id: 'TRX004', amount: '+₹1,000.00', date: '2024-06-25', time: '09:00 AM' },
-  ];
 
   const fetchdata = async () => {
     try {
@@ -33,6 +26,7 @@ function Home() {
         const data = await res.json();
         console.log("userinfo: ", data);
         setStore(Object.values(data));
+        console.log("store of 1 ",store[1])
       } else {
         console.error("Failed to fetch data");
       }
@@ -46,7 +40,6 @@ function Home() {
       fetchdata();
     }
   }, [me]);
-
   return (
     <div className='min-h-screen bg-white'>
       <div className='flex justify-between p-4 bg-transparent'>
@@ -55,9 +48,12 @@ function Home() {
             <div className='flex items-center w-6 h-6 p-1 mt-0 mr-2 bg-white border border-black rounded-full'>
               <img src='profile.png' alt='Profile' />
             </div>
-            <div className='font-medium text-black'>
-              Ganesh0433
-            </div>
+            {store[0]?(<div className='font-medium text-black'>
+            {store[0].Username}
+            </div>):(<div className='font-medium text-black'>
+            {}
+            </div>)}
+            
           </div>
         </button>
         <div className='flex space-x-10'>
@@ -109,6 +105,7 @@ function Home() {
                 </button>
               </div>
             </div>
+            <p className='px-1 py-0.5 mt-2 text-xs text-gray-500 max-w-fit bg-slate-100' style={{ wordSpacing: '-0.09em' }}>Last updated at 07:46 am on 30 jun 2024</p>
           </div>
 
           <div className='p-6 bg-white rounded-lg shadow-md'>
@@ -127,13 +124,19 @@ function Home() {
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-200'>
-                  {transactions.map((transaction, index) => (
-                    <tr key={index} className='bg-white'>
-                      <td className='px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap'>{transaction.id}</td>
-                      <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>{transaction.date} {transaction.time}</td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.amount.includes('+') ? 'text-green-500' : 'text-red-500'}`}>{transaction.amount}</td>
+                  {store.length>1 ? (
+                    Object.values(store[1]).map((transaction, index) => (
+                      <tr key={index} className='bg-white'>
+                        <td className='px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap'>{transaction.txnid}</td>
+                        <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateOfDebit} {transaction.TimeOfDebit}</td>
+                        <td className={` font-medium px-6 py-4 whitespace-nowrap text-sm ${transaction.Amount.includes('+') ? 'text-green-500' : 'text-red-500'}`}>{transaction.Amount}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="px-6 py-4 text-sm text-center text-gray-500">No transactions found</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
