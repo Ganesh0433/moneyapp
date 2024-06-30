@@ -7,12 +7,7 @@ function History() {
 
     const { me } = router.query;
 
-    const transactions = [
-        { id: 'TRX001', amount: '₹50.00', fromdate: '2024-06-28', Todate: '2027-06-28', fromtime: '10:30 AM', totime: '10:30 AM' },
-        { id: 'TRX002', amount: '₹200.00', fromdate: '2024-06-27', Todate: '2027-04-28', fromtime: '02:15 PM', totime: '11:30 AM' },
-        { id: 'TRX003', amount: '₹120.00', fromdate: '2024-06-26', Todate: '2029-06-28', fromtime: '11:45 AM', totime: '5:30 PM' },
-        { id: 'TRX004', amount: '₹1,000.00', fromdate: '2024-06-25', Todate: '2027-02-28', fromtime: '09:00 AM', totime: '9:30 AM' },
-    ];
+
 
     const fetchdat = async () => {
         try {
@@ -54,7 +49,7 @@ function History() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                        {store.map((transaction,index) => (
+                        {store.length>0 ? (store.map((transaction,index) => (
                             <tr key={index} className="bg-white">
                                 <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{transaction.txnid}</td>
                                 <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
@@ -64,7 +59,9 @@ function History() {
                                 </td>
                                 <td className='px-6 py-4 text-sm font-medium text-blue-500 whitespace-nowrap'>{transaction.Amount}</td>
                             </tr>
-                        ))}
+                        ))):( <tr>
+                            <td colSpan="3" className="px-6 py-4 text-sm text-center text-gray-500">No transactions found</td>
+                          </tr>)}
                     </tbody>
                 </table>
             </div>
