@@ -3,11 +3,13 @@ import { useRouter } from 'next/router';
 
 const SignUp = () => {
     const router = useRouter();
+    var CurrentBalance=0;
     const [details, setDetails] = useState({
         Name: '',
         Phoneno: '',
         Email: '',
         Password: '',
+       
     });
 
     const handleChange = (e) => {
@@ -43,19 +45,33 @@ const SignUp = () => {
                 Phoneno,
                 Email,
                 Password,
+                CurrentBalance
+            })
+        };
+
+        const option = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+               
+                CurrentBalance
             })
         };
 
         try {
             const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/credentials.json`, options);
             const response = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${User}.json`, options);
+            const respons = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/currentbalance/${User}.json`, option);
 
-            if (res.ok && response.ok) {
+            if (res.ok && response.ok &&respons.ok) {
                 alert('Data stored successfully!');
-                router.push('/login'); // Redirect to login page after successful signup
+                router.push('/login'); 
             } else {
                 throw new Error('Failed to store data.');
             }
+           
         } catch (error) {
             console.error('Error:', error);
             alert('Error occurred while storing data.');

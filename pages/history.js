@@ -15,7 +15,7 @@ function History() {
             if (res.ok) {
                 const data = await res.json();
                 console.log("Fetched data:", data);
-                setStore(Object.values(data)); // Assuming data is an object with values to store in state
+                setStore(Object.values(data)); 
             } else {
                 console.error("Failed to fetch data");
             }
@@ -57,7 +57,7 @@ function History() {
                                         {transaction.DateOfDebit} {transaction.TimeOfDebit}  &nbsp; To &nbsp; {transaction.DateToCredit} {transaction.TimeToCredit}
                                     </div>
                                 </td>
-                                <td className='px-6 py-4 text-sm font-medium text-blue-500 whitespace-nowrap'>{transaction.Amount}</td>
+                                <td className='px-6 py-4 text-sm font-medium text-blue-500 whitespace-nowrap'>₹{transaction.Amount}</td>
                             </tr>
                         ))):( <tr>
                             <td colSpan="3" className="px-6 py-4 text-sm text-center text-gray-500">No transactions found</td>

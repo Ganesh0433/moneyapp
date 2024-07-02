@@ -6,6 +6,7 @@ function Home() {
   const { me } = router.query;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [store, setStore] = useState([]);
+  const [currentbalance, setcurrentbalance] = useState([]);
 
   const addMoney = () => {
     router.push(`/addmoney?me=${me}`);
@@ -22,11 +23,19 @@ function Home() {
   const fetchdata = async () => {
     try {
       const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}.json`);
+      const resp = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/currentbalance/${me}.json`);
       if (res.ok) {
         const data = await res.json();
-        console.log("userinfo: ", data);
         setStore(Object.values(data));
-        console.log("store of 1 ",store[1])
+        console.log("userinfo: ", data);
+      } else {
+        console.error("Failed to fetch data");
+      }
+      if (resp.ok) {
+        const resdata = await resp.json();
+        setcurrentbalance(Object.values(resdata).pop());
+        
+        console.log("current balence ",currentbalance.CurrentBalance)
       } else {
         console.error("Failed to fetch data");
       }
@@ -40,6 +49,9 @@ function Home() {
       fetchdata();
     }
   }, [me]);
+var balance=currentbalance.CurrentBalance 
+ 
+
   return (
     <div className='min-h-screen bg-white'>
       <div className='flex justify-between p-4 bg-transparent'>
@@ -48,12 +60,15 @@ function Home() {
             <div className='flex items-center w-6 h-6 p-1 mt-0 mr-2 bg-white border border-black rounded-full'>
               <img src='profile.png' alt='Profile' />
             </div>
-            {store[0]?(<div className='font-medium text-black'>
-            {store[0].Username}
-            </div>):(<div className='font-medium text-black'>
-            {}
-            </div>)}
-            
+            {store[0] ? (
+              <div className='font-medium text-black'>
+                {store[0].Username}
+              </div>
+            ) : (
+              <div className='font-medium text-black'>
+                {}
+              </div>
+            )}
           </div>
         </button>
         <div className='flex space-x-10'>
@@ -97,7 +112,7 @@ function Home() {
             <div className='flex items-center justify-between'>
               <div>
                 <h2 className='text-xl font-bold'>Current Balance</h2>
-                <p className='text-3xl font-semibold text-green-500'>₹0.00</p>
+                <p className='text-3xl font-semibold text-green-500'>₹{balance}</p>
               </div>
               <div className='relative'>
                 <button onClick={addMoney} className='px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300'>
@@ -124,12 +139,24 @@ function Home() {
                   </tr>
                 </thead>
                 <tbody className='divide-y divide-gray-200'>
-                  {store.length>1 ? (
+                  {store.length > 1 ? (
                     Object.values(store[1]).map((transaction, index) => (
                       <tr key={index} className='bg-white'>
                         <td className='px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap'>{transaction.txnid}</td>
-                        <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateOfDebit} {transaction.TimeOfDebit}</td>
-                        <td className={` font-medium px-6 py-4 whitespace-nowrap text-sm ${transaction.Amount.includes('+') ? 'text-green-500' : 'text-red-500'}`}>{transaction.Amount}</td>
+                        {transaction.DateOfDebit && transaction.TimeOfDebit ?(
+                         <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateOfDebit} {transaction.TimeOfDebit}</td>
+
+                        ):(
+                          <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateToCredit} {transaction.TimeToCredit}</td>
+
+                        )}
+                          {transaction.DateOfDebit && transaction.TimeOfDebit ?(
+                        <td className='px-6 py-4 text-sm font-medium text-red-500 whitespace-nowrap'>₹{transaction.Amount}</td>
+
+                        ):(
+                          <td className='px-6 py-4 text-sm font-medium text-green-500 whitespace-nowrap'>₹{transaction.Amount}</td>
+
+                        )}
                       </tr>
                     ))
                   ) : (

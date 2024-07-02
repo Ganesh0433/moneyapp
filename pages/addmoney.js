@@ -57,7 +57,8 @@ const QRCodeGenerator = () => {
                 DateOfDebit,
                 TimeOfDebit,
                 Amount,
-                Message
+                Message,
+                userid:me
             })
         };
         const option = {
@@ -70,13 +71,20 @@ const QRCodeGenerator = () => {
                 DateOfDebit,
                 TimeOfDebit,
                 Amount,
-                Message
+                Message,
+                userid:me
             })
         };
         try {
             const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/Transactions.json`, options);
             const response = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/RecentTransaction.json`, option);
+            const uresponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/Alltransactions.json`, options);
             if (res.ok) {
+                alert('Data stored successfully!');
+            } else {
+                throw new Error('Failed to store data.');
+            }
+            if (uresponse.ok) {
                 alert('Data stored successfully!');
             } else {
                 throw new Error('Failed to store data.');
@@ -166,7 +174,7 @@ const QRCodeGenerator = () => {
                 </div>
                 <div className="relative flex flex-col items-center justify-center w-full p-4 md:w-1/2">
                     <span className="px-4 py-2 mb-3 text-4xl font-bold text-gray-800 bg-white rounded-lg shadow-md">
-                        Pay with Google Pay
+                        Scan and Pay
                     </span>
                     {qrText ? (
                         <QRCode
