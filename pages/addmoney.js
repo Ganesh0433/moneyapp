@@ -1,19 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 import { useRouter } from 'next/router';
+import style from './home.module.css';
+import LoadingBar from 'react-top-loading-bar'; 
 
 const QRCodeGenerator = () => {
     const router = useRouter();
     const { me } = router.query;
 
     const [details, setDetails] = useState({
-        Amount: '+',
+        Amount: '',
         Message: '',
-        DateToCredit: '',  
-        TimeToCredit: ''   
+        DateToCredit: '',
+        TimeToCredit: ''
     });
 
     const [qrText, setQrText] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [progress, setProgress] = useState(0); 
+    const [successMessage, setSuccessMessage] = useState('');
+
+    useEffect(() => {
+        if (me) {
+            setLoading(false);
+            setProgress(100); 
+        }
+    }, [me]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -21,12 +33,16 @@ const QRCodeGenerator = () => {
     };
 
     const handleGenerateQRCode = () => {
-        const { Amount, Message} = details;
+        setLoading(true);
+        const { Amount, Message } = details;
         const upiUrl = `upi://pay?pa=mekalaganeshreddy796@oksbi&pn=M.Ganesh%20Reddy&am=${Amount}&cu=INR&aid=uGICAgICnh8qGLA&tn=${encodeURIComponent(Message)}`;
         setQrText(upiUrl);
+        setLoading(false);
     };
 
     const PaymentSuccessful = async () => {
+        setLoading(true);
+        setProgress(0); // Reset progress bar
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -39,12 +55,12 @@ const QRCodeGenerator = () => {
         const formattedHours = String(hours).padStart(2, '0');
         const DateOfDebit = `${day}-${month}-${year}`;
         const TimeOfDebit = `${formattedHours}:${minutes} ${ampm}`;
-        const { Amount, Message,DateToCredit,TimeToCredit  } = details;
+        const { Amount, Message, DateToCredit, TimeToCredit } = details;
         function getRandomThreeDigitInt() {
             return Math.floor(Math.random() * 900) + 100;
         }
         const randomno = getRandomThreeDigitInt();
-        const txnid = "TXN"+randomno
+        const txnid = "TXN" + randomno;
         const options = {
             method: 'POST',
             headers: {
@@ -58,7 +74,7 @@ const QRCodeGenerator = () => {
                 TimeOfDebit,
                 Amount,
                 Message,
-                userid:me
+                userid: me
             })
         };
         const option = {
@@ -72,36 +88,41 @@ const QRCodeGenerator = () => {
                 TimeOfDebit,
                 Amount,
                 Message,
-                userid:me
+                userid: me
             })
         };
         try {
             const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/Transactions.json`, options);
             const response = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/RecentTransaction.json`, option);
             const uresponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/Alltransactions.json`, options);
-            if (res.ok) {
-                alert('Data stored successfully!');
-            } else {
-                throw new Error('Failed to store data.');
-            }
-            if (uresponse.ok) {
-                alert('Data stored successfully!');
-            } else {
-                throw new Error('Failed to store data.');
-            }
-            if (response.ok) {
-                alert('Data stored successfully!');
+            if (res.ok && response.ok && uresponse.ok) {
+                setSuccessMessage('Payment Successful!');
             } else {
                 throw new Error('Failed to store data.');
             }
         } catch (error) {
             console.error('Error:', error);
             alert('Error occurred while storing data.');
+        } finally {
+            setLoading(false);
+            setProgress(100); // Complete the progress bar
         }
+    };
+
+    // Check if all input fields are filled
+    const areAllFieldsFilled = () => {
+        const { Amount, Message, DateToCredit, TimeToCredit } = details;
+        return Amount && Message && DateToCredit && TimeToCredit;
     };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
+            <LoadingBar
+                color='#f11946'
+                progress={progress}
+                onLoaderFinished={() => setProgress(0)}
+            />
+            {loading && <div className={style.youtubeloader}></div>}
             <div className="mb-4 text-center">
                 <p className="text-lg font-semibold">Please scan the QR code to make a payment.</p>
                 <p className="text-gray-700 text-md">Ensure the payment amount and message are correct.</p>
@@ -117,28 +138,31 @@ const QRCodeGenerator = () => {
                         onChange={handleChange}
                         className="w-full p-2 mb-4 border border-gray-300 rounded-md"
                         placeholder="Enter amount"
+                        required
                     />
-                    <label className="block mb-2 font-semibold text-gray-700">Message:</label>
+                    <label className="block mb-2 font-semibold text-gray-700">UPI id:</label>
                     <input
                         name="Message"
                         type="text"
                         value={details.Message}
                         onChange={handleChange}
                         className="w-full p-2 mb-4 border border-gray-300 rounded-md"
-                        placeholder="Enter a message (Phone no)"
+                        placeholder="Enter Your UPI id"
+                        required
                     />
                     <div className="mb-4">
                         <label className="block mb-2 font-semibold text-gray-700" htmlFor="date">
                             Date to Credit:
                         </label>
                         <input
-                            name="DateToCredit"  
+                            name="DateToCredit"
                             className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                             id="date"
                             type="text"
                             placeholder="Enter date (e.g., DD-MM-YYYY)"
                             value={details.DateToCredit}
                             onChange={handleChange}
+                            required
                         />
                     </div>
                     <div className="mb-6">
@@ -146,13 +170,14 @@ const QRCodeGenerator = () => {
                             Time to Credit:
                         </label>
                         <input
-                            name="TimeToCredit" 
+                            name="TimeToCredit"
                             className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                             id="time"
                             type="text"
                             placeholder="Enter time (e.g., HH:MM AM/PM)"
                             value={details.TimeToCredit}
                             onChange={handleChange}
+                            required
                         />
                     </div>
                     <button
@@ -168,6 +193,7 @@ const QRCodeGenerator = () => {
                     <button
                         onClick={PaymentSuccessful}
                         className="w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none"
+                        disabled={!areAllFieldsFilled()} 
                     >
                         Payment Successful
                     </button>
@@ -190,6 +216,11 @@ const QRCodeGenerator = () => {
                     )}
                 </div>
             </div>
+            {successMessage && (
+                <div className="p-4 mt-4 text-green-700 bg-green-100 border border-green-400 rounded">
+                    {successMessage}
+                </div>
+            )}
         </div>
     );
 };

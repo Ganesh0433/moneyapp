@@ -48,6 +48,21 @@ const SignUp = () => {
                 CurrentBalance
             })
         };
+        function formatDate(date) {
+            const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+            const timeString = date.toLocaleTimeString('en-US', options);
+          
+            const day = date.getDate();
+            const month = date.toLocaleString('default', { month: 'short' });
+            const year = date.getFullYear();
+          
+            return `Last updated at ${timeString.toLowerCase()} on ${day} ${month} ${year}`;
+          }
+          
+          const date = new Date();
+          const formattedDate = formatDate(date);
+          
+          console.log(formattedDate);
 
         const option = {
             method: 'POST',
@@ -56,7 +71,8 @@ const SignUp = () => {
             },
             body: JSON.stringify({
                
-                CurrentBalance
+                CurrentBalance,
+                formattedDate:formattedDate
             })
         };
 
