@@ -121,8 +121,6 @@ const QRCodeGenerator = () => {
       useEffect(() => {
         if (!checkAuth()) {
           router.push('/login');
-        } else if (me) {
-          fetchdata();
         }
       }, [me]);
     return (
