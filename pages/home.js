@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import style from './home.module.css'
+import style from './home.module.css';
+
 function Home() {
   const router = useRouter();
   const { me } = router.query;
@@ -20,9 +21,11 @@ function Home() {
   const aboutus = () => {
     router.push(`/aboutus`);
   };
+
   const faqs = () => {
     router.push(`/faqs`);
   };
+
   const help = () => {
     router.push(`/help`);
   };
@@ -56,8 +59,15 @@ function Home() {
     }
   };
 
+  const checkAuth = () => {
+    const token = localStorage.getItem('token');
+    return token ? true : false;
+  };
+
   useEffect(() => {
-    if (me) {
+    if (!checkAuth()) {
+      router.push('/login');
+    } else if (me) {
       fetchdata();
     }
   }, [me]);
@@ -131,11 +141,10 @@ function Home() {
                 <div className='flex items-center justify-between'>
                   <div>
                     <h2 className='text-xl font-bold'>Current Balance</h2>
-                    <p className='text-3xl font-semibold text-green-500'>₹{balance}</p>
+                    <p className='text-3xl font-semibold text-green-500'>₹{balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                   </div>
                   <div className='relative'>
                     <button onClick={addMoney} className='px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300'>
-                   
                       Add Money
                     </button>
                   </div>

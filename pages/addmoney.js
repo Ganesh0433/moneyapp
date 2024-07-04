@@ -42,7 +42,7 @@ const QRCodeGenerator = () => {
 
     const PaymentSuccessful = async () => {
         setLoading(true);
-        setProgress(0); // Reset progress bar
+        setProgress(0); 
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -109,12 +109,22 @@ const QRCodeGenerator = () => {
         }
     };
 
-    // Check if all input fields are filled
     const areAllFieldsFilled = () => {
         const { Amount, Message, DateToCredit, TimeToCredit } = details;
         return Amount && Message && DateToCredit && TimeToCredit;
     };
-
+    const checkAuth = () => {
+        const token = localStorage.getItem('token');
+        return token ? true : false;
+      };
+    
+      useEffect(() => {
+        if (!checkAuth()) {
+          router.push('/login');
+        } else if (me) {
+          fetchdata();
+        }
+      }, [me]);
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
             <LoadingBar
