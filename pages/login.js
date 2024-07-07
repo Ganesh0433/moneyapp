@@ -27,7 +27,7 @@ const Login = () => {
           });
           if (matches.length > 0) {
             const user = matches[0].Username;
-            localStorage.setItem('token', 'your_token_here'); // Ideally, replace 'your_token_here' with a real token from your auth server
+            localStorage.setItem('token', 'your_token_here');
             router.push(`/home?me=${user}`);
           } else {
             console.error('No matching user found');
@@ -67,7 +67,7 @@ const Login = () => {
           <div className="relative mt-5">
             <h4 className="text-white">Password</h4>
             <input
-              type="password" // Changed input type to password
+              type="password"
               name='UserPassword'
               value={loginDetails.UserPassword}
               className="w-full p-2 mt-2 text-white placeholder-gray-400 bg-white border-none rounded appearance-none focus:outline-none bg-opacity-10"
