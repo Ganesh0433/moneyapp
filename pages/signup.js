@@ -30,7 +30,6 @@ const SignUp = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Check if all fields are filled
         if (!details.Name || !details.Phoneno || !details.Email || !details.Password) {
             setErrorMessage('Please fill in all fields.');
             return;
@@ -183,7 +182,7 @@ const SignUp = () => {
                                 {errorMessage}
                             </div>
                         )}
-                    3
+                    
                     </form>
                     <style jsx>{`
                         input[type='number']::-webkit-inner-spin-button,
