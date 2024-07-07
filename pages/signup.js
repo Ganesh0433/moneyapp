@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import style from './home.module.css';
 
 const SignUp = () => {
     const router = useRouter();
@@ -12,11 +13,12 @@ const SignUp = () => {
 
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'Name' && /\s/.test(value)) {
-            return; // Prevent entering whitespace in Name
+            return;
         }
         setDetails({ ...details, [name]: value });
     };
@@ -28,20 +30,28 @@ const SignUp = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Check if all fields are filled
+        if (!details.Name || !details.Phoneno || !details.Email || !details.Password) {
+            setErrorMessage('Please fill in all fields.');
+            return;
+        }
+
+        setLoading(true);
+
         const { Name, Phoneno, Email, Password } = details;
         const User = Name + getRandomThreeDigitInt();
 
         try {
-            // Check if user with same Phoneno and Email exists
             const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/credentials.json`);
             if (res.ok) {
                 const data = await res.json();
                 if (data) {
                     const matches = Object.values(data).filter(entry => {
-                        return entry.Phoneno === Phoneno && entry.Email === Email;
+                        return entry.Phoneno === Phoneno || entry.Email === Email;
                     });
                     if (matches.length > 0) {
-                        setErrorMessage('User already exists with the same Phone number and Email.');
+                        setErrorMessage('User already exists with the same Phone number or Email.');
+                        setLoading(false);
                         return;
                     }
                 }
@@ -49,7 +59,6 @@ const SignUp = () => {
                 throw new Error('Failed to fetch data.');
             }
 
-            // If no matching user, proceed with registration
             const options = {
                 method: 'POST',
                 headers: {
@@ -61,11 +70,10 @@ const SignUp = () => {
                     Phoneno,
                     Email,
                     Password,
-                    CurrentBalance: 0 // Assuming CurrentBalance starts from 0
+                    CurrentBalance: 0
                 })
             };
 
-            // Perform registration
             const registerResponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/credentials.json`, options);
             const userInfoResponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${User}.json`, options);
             const currentBalanceResponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/currentbalance/${User}.json`, {
@@ -90,6 +98,8 @@ const SignUp = () => {
         } catch (error) {
             console.error('Error:', error);
             setErrorMessage('Error occurred while registering user.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -109,6 +119,7 @@ const SignUp = () => {
     return (
         <>
             <button onClick={login} className="absolute w-20 px-4 py-2 mt-6 text-white transition-colors duration-300 bg-transparent border-2 border-white rounded hover:bg-white hover:text-black top-3 right-16">Login</button>
+          
             <div className="flex items-center justify-center w-full min-h-screen p-4 bg-gradient-to-r from-purple-500 to-blue-500">
                 <div className="w-full max-w-md p-6 bg-black rounded-lg shadow-lg bg-opacity-80">
                     <div className="mt-2 text-4xl font-normal text-center text-white">SignUp</div>
@@ -155,19 +166,24 @@ const SignUp = () => {
                                 onChange={handleChange}
                             />
                         </div>
-                        <button type="submit" className="w-full px-4 py-2 mt-6 text-white transition-colors duration-300 bg-transparent border-2 border-white rounded hover:bg-white hover:text-black">
-                            Submit
+                        <button type="submit" disabled={loading} className={`w-full px-4 py-2 mt-6 text-white transition-colors duration-300 bg-transparent border-2 border-white rounded hover:bg-white hover:text-black ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                            {loading ? 'Signing Up...' : 'Submit'}
                         </button>
-                        {successMessage && (
+                        {loading && (
+                    <div className={style.signuploader}></div>
+             
+            )}
+                      {successMessage &&  (
                             <div className="p-4 mt-4 text-green-700 bg-green-100 border border-green-400 rounded">
                                 {successMessage}
                             </div>
-                        )}
-                        {errorMessage && (
+                        )}:
+                        {errorMessage  && (
                             <div className="p-4 mt-4 text-red-700 bg-red-100 border border-red-400 rounded">
                                 {errorMessage}
                             </div>
                         )}
+                    3
                     </form>
                     <style jsx>{`
                         input[type='number']::-webkit-inner-spin-button,
@@ -177,6 +193,13 @@ const SignUp = () => {
                         }
                         input[type='number'] {
                             -moz-appearance: textfield; 
+                        }
+                        .animate-progress {
+                            animation: progress 2s ease-out forwards;
+                        }
+                        @keyframes progress {
+                            from { width: 0%; }
+                            to { width: 100%; }
                         }
                     `}</style>
                 </div>
