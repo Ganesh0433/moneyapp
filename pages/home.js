@@ -73,6 +73,10 @@ function Home() {
   }, [me]);
 
   var balance = currentbalance.CurrentBalance;
+  if(!balance){
+    balance=0
+  }
+     
   var lastfetched = currentbalance.formattedDate;
 
   return (
@@ -100,15 +104,15 @@ function Home() {
                 )}
               </div>
             </button>
-            <div className='flex space-x-10'>
-              <button onClick={history} className='px-4 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>History</button>
-              <button onClick={aboutus} className='px-4 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>About Us</button>
-              <button onClick={faqs} className='px-4 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>FAQ</button>
-              <button onClick={help} className='px-4 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>Help</button>
+            <div className='flex space-x-2 md:space-x-4'>
+              <button onClick={history} className='px-2 py-1 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>History</button>
+              <button onClick={aboutus} className='px-2 py-1 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>About Us</button>
+              <button onClick={faqs} className='px-2 py-1 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>FAQ</button>
+              <button onClick={help} className='px-2 py-1 text-white transition duration-500 ease-in-out transform bg-black rounded hover:scale-105 focus:outline-none'>Help</button>
             </div>
           </div>
 
-          <div className={`fixed top-0 left-0 w-76 h-full bg-white shadow-md transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
+          <div className={`fixed top-0 left-0 w-96 h-full bg-white shadow-md transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
             <button className='p-4' onClick={toggleSidebar}>
               Close
             </button>
@@ -130,15 +134,15 @@ function Home() {
                   </div>
                 </>
               ) : (
-                <p>Loading...</p>
+                <p>Facing Problem ...</p>
               )}
             </div>
           </div>
 
-          <div className={`p-10 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
+          <div className={`p-4 transition-all duration-300 ${isSidebarOpen ? 'ml-96' : 'ml-0'}`}>
             <div className='container p-4 mx-auto'>
               <div className='p-6 mb-6 bg-white rounded-lg shadow-md'>
-                <div className='flex items-center justify-between'>
+                <div className='flex flex-col items-start space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0'>
                   <div>
                     <h2 className='text-xl font-bold'>Current Balance</h2>
                     <p className='text-3xl font-semibold text-green-500'>₹{balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
@@ -162,31 +166,31 @@ function Home() {
                     <table className='min-w-full divide-y divide-gray-200'>
                       <thead className='bg-gray-100'>
                         <tr>
-                          <th className='px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Transaction ID</th>
-                          <th className='px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Date & Time</th>
-                          <th className='px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Amount</th>
+                          <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Transaction ID</th>
+                          <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Date & Time</th>
+                          <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Amount</th>
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-200'>
                         {store.length > 1 ? (
                           Object.values(store[1]).reverse().map((transaction, index) => (
                             <tr key={index} className='bg-white'>
-                              <td className='px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap'>{transaction.txnid}</td>
+                              <td className='px-4 py-2 text-sm font-medium text-gray-900 whitespace-nowrap'>{transaction.txnid}</td>
                               {transaction.DateOfDebit && transaction.TimeOfDebit ? (
-                                <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateOfDebit} {transaction.TimeOfDebit}</td>
+                                <td className='px-4 py-2 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateOfDebit} {transaction.TimeOfDebit}</td>
                               ) : (
-                                <td className='px-6 py-4 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateToCredit} {transaction.TimeToCredit}</td>
+                                <td className='px-4 py-2 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateToCredit} {transaction.TimeToCredit}</td>
                               )}
                               {transaction.DateOfDebit && transaction.TimeOfDebit ? (
-                                <td className='px-6 py-4 text-sm font-medium text-red-500 whitespace-nowrap'>₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                               ) : (
-                                <td className='px-6 py-4 text-sm font-medium text-green-500 whitespace-nowrap'>₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                               )}
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan="3" className="px-6 py-4 text-sm text-center text-gray-500">No transactions found</td>
+                            <td colSpan="3" className="px-4 py-2 text-sm text-center text-gray-500">No transactions found</td>
                           </tr>
                         )}
                       </tbody>

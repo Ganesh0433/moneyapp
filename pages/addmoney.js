@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 import { useRouter } from 'next/router';
 import style from './home.module.css';
-import LoadingBar from 'react-top-loading-bar'; 
+import LoadingBar from 'react-top-loading-bar';
 
 const QRCodeGenerator = () => {
     const router = useRouter();
@@ -17,13 +17,14 @@ const QRCodeGenerator = () => {
 
     const [qrText, setQrText] = useState('');
     const [loading, setLoading] = useState(true);
-    const [progress, setProgress] = useState(0); 
+    const [progress, setProgress] = useState(0);
     const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         if (me) {
             setLoading(false);
-            setProgress(100); 
+            setProgress(100);
         }
     }, [me]);
 
@@ -41,8 +42,13 @@ const QRCodeGenerator = () => {
     };
 
     const PaymentSuccessful = async () => {
+        if (!validateDate(details.DateToCredit) || !validateTime(details.TimeToCredit)) {
+            setErrorMessage('Please enter date in DD-MM-YYYY format and time in HH:MM AM/PM format.');
+            return;
+        }
+
         setLoading(true);
-        setProgress(0); 
+        setProgress(0);
         const now = new Date();
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -56,9 +62,11 @@ const QRCodeGenerator = () => {
         const DateOfDebit = `${day}-${month}-${year}`;
         const TimeOfDebit = `${formattedHours}:${minutes} ${ampm}`;
         const { Amount, Message, DateToCredit, TimeToCredit } = details;
+
         function getRandomThreeDigitInt() {
             return Math.floor(Math.random() * 900) + 100;
         }
+
         const randomno = getRandomThreeDigitInt();
         const txnid = "TXN" + randomno;
         const options = {
@@ -97,6 +105,7 @@ const QRCodeGenerator = () => {
             const uresponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/Alltransactions.json`, options);
             if (res.ok && response.ok && uresponse.ok) {
                 setSuccessMessage('Payment Successful!');
+                setErrorMessage(''); // Clear error message on successful payment
             } else {
                 throw new Error('Failed to store data.');
             }
@@ -105,7 +114,7 @@ const QRCodeGenerator = () => {
             alert('Error occurred while storing data.');
         } finally {
             setLoading(false);
-            setProgress(100); // Complete the progress bar
+            setProgress(100);
         }
     };
 
@@ -113,16 +122,28 @@ const QRCodeGenerator = () => {
         const { Amount, Message, DateToCredit, TimeToCredit } = details;
         return Amount && Message && DateToCredit && TimeToCredit;
     };
+
+    const validateDate = (date) => {
+        const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
+        return dateRegex.test(date);
+    };
+
+    const validateTime = (time) => {
+        const timeRegex = /^(0[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
+        return timeRegex.test(time);
+    };
+
     const checkAuth = () => {
         const token = localStorage.getItem('token');
         return token ? true : false;
-      };
-    
-      useEffect(() => {
+    };
+
+    useEffect(() => {
         if (!checkAuth()) {
-          router.push('/login');
+            router.push('/login');
         }
-      }, [me]);
+    }, [me]);
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
             <LoadingBar
@@ -167,7 +188,7 @@ const QRCodeGenerator = () => {
                             className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                             id="date"
                             type="text"
-                            placeholder="Enter date (e.g., DD-MM-YYYY)"
+                            placeholder="DD-MM-YYYY"
                             value={details.DateToCredit}
                             onChange={handleChange}
                             required
@@ -182,7 +203,7 @@ const QRCodeGenerator = () => {
                             className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
                             id="time"
                             type="text"
-                            placeholder="Enter time (e.g., HH:MM AM/PM)"
+                            placeholder="HH:MM AM/PM"
                             value={details.TimeToCredit}
                             onChange={handleChange}
                             required
@@ -201,7 +222,7 @@ const QRCodeGenerator = () => {
                     <button
                         onClick={PaymentSuccessful}
                         className="w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none"
-                        disabled={!areAllFieldsFilled()} 
+                        disabled={!areAllFieldsFilled()}
                     >
                         Payment Successful
                     </button>
@@ -224,6 +245,11 @@ const QRCodeGenerator = () => {
                     )}
                 </div>
             </div>
+            {errorMessage && (
+                <div className="p-4 mt-4 text-red-700 bg-red-100 border border-red-400 rounded">
+                    {errorMessage}
+                </div>
+            )}
             {successMessage && (
                 <div className="p-4 mt-4 text-green-700 bg-green-100 border border-green-400 rounded">
                     {successMessage}
@@ -234,3 +260,4 @@ const QRCodeGenerator = () => {
 };
 
 export default QRCodeGenerator;
+ 
