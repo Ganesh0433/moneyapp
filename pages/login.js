@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import style from './home.module.css'
+import style from './home.module.css';
+
 const Login = () => {
   const router = useRouter();
   const [loginDetails, setLoginDetails] = useState({
@@ -35,14 +36,14 @@ const Login = () => {
           if (matches.length > 0) {
             const user = matches[0].Username;
             localStorage.setItem('token', 'your_token_here');
-            router.push(`/home?me=${user}`);
-           
             setSuccessMessage('Successfully logged in');
-
+            setLoginDetails({
+              PhoneNumber: '',
+              UserPassword: '',
+            });
+            router.push(`/home?me=${user}`);
           } else {
-           
             setErrorMessage('Incorrect phone number or password');
-
           }
         }
       } else {
@@ -51,7 +52,6 @@ const Login = () => {
     } catch (error) {
       console.error('Error:', error);
       setErrorMessage('Failed to log in');
-
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,6 @@ const Login = () => {
         <div className="p-8 bg-black rounded-lg shadow-lg bg-opacity-80 w-96">
           <div className="mt-2 text-4xl font-normal text-center text-white">Login</div>
           <div className="relative">
-        
             <div>
               <h4 className="mt-8 text-white">Phone Number</h4>
               <input
@@ -101,18 +100,18 @@ const Login = () => {
               {loading ? 'Logging in...' : 'Submit'}
             </button>
             {loading && (
-                    <div className={style.signuploader}></div>
-             
-            )}            {successMessage &&  (
-                            <div className="p-4 mt-4 text-green-700 bg-green-100 border border-green-400 rounded">
-                                {successMessage}
-                            </div>
-                        )}:
-                        {errorMessage  && (
-                            <div className="p-4 mt-4 text-red-700 bg-red-100 border border-red-400 rounded">
-                                {errorMessage}
-                            </div>
-                        )}
+              <div className={style.signuploader}></div>
+            )}
+            {successMessage && (
+              <div className="p-4 mt-4 text-green-700 bg-green-100 border border-green-400 rounded">
+                {successMessage}
+              </div>
+            )}
+            {errorMessage && (
+              <div className="p-4 mt-4 text-red-700 bg-red-100 border border-red-400 rounded">
+                {errorMessage}
+              </div>
+            )}
           </div>
           <style jsx>{`
             input[type='number']::-webkit-inner-spin-button,
@@ -122,12 +121,6 @@ const Login = () => {
             }
             input[type='number'] {
               -moz-appearance: textfield; 
-            }
-            .message {
-              position: absolute;
-              bottom: -20px;
-              left: 50%;
-              transform: translateX(-50%);
             }
           `}</style>
         </div>

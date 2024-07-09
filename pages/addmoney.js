@@ -20,6 +20,7 @@ const QRCodeGenerator = () => {
     const [progress, setProgress] = useState(0);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [shakeButton, setShakeButton] = useState(false);
 
     useEffect(() => {
         if (me) {
@@ -57,7 +58,7 @@ const QRCodeGenerator = () => {
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12;
-        hours = hours ? hours : 12;
+        hours = hours ? 12 : 12;
         const formattedHours = String(hours).padStart(2, '0');
         const DateOfDebit = `${day}-${month}-${year}`;
         const TimeOfDebit = `${formattedHours}:${minutes} ${ampm}`;
@@ -106,6 +107,14 @@ const QRCodeGenerator = () => {
             if (res.ok && response.ok && uresponse.ok) {
                 setSuccessMessage('Payment Successful!');
                 setErrorMessage(''); // Clear error message on successful payment
+                // Reset the details state
+                setDetails({
+                    Amount: '',
+                    Message: '',
+                    DateToCredit: '',
+                    TimeToCredit: ''
+                });
+                setQrText(''); // Clear QR code
             } else {
                 throw new Error('Failed to store data.');
             }
@@ -143,6 +152,14 @@ const QRCodeGenerator = () => {
             router.push('/login');
         }
     }, [me]);
+
+    useEffect(() => {
+        if (areAllFieldsFilled()) {
+            setShakeButton(true);
+            const timeoutId = setTimeout(() => setShakeButton(false), 500);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [details]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-100">
@@ -220,12 +237,13 @@ const QRCodeGenerator = () => {
                         <span className="font-semibold text-blue-600"> "Payment Successful" </span>
                     </p>
                     <button
-                        onClick={PaymentSuccessful}
-                        className="w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none"
-                        disabled={!areAllFieldsFilled()}
-                    >
-                        Payment Successful
-                    </button>
+    onClick={PaymentSuccessful}
+    className={`w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none ${shakeButton ? style.shake : ''}`}
+    disabled={!areAllFieldsFilled()}
+>
+    Payment Successful
+</button>
+
                 </div>
                 <div className="relative flex flex-col items-center justify-center w-full p-4 md:w-1/2">
                     <span className="px-4 py-2 mb-3 text-4xl font-bold text-gray-800 bg-white rounded-lg shadow-md">
@@ -260,4 +278,3 @@ const QRCodeGenerator = () => {
 };
 
 export default QRCodeGenerator;
- 
