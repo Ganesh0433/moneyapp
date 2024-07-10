@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import style from './home.module.css';
+import { stringify } from 'postcss';
 
 function Home() {
   const router = useRouter();
@@ -8,6 +9,7 @@ function Home() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [store, setStore] = useState([]);
   const [currentbalance, setcurrentbalance] = useState([]);
+  const [status, setStatus] = useState({});
   const [loading, setLoading] = useState(true);
 
   const addMoney = () => {
@@ -38,6 +40,7 @@ function Home() {
     try {
       const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}.json`);
       const resp = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/currentbalance/${me}.json`);
+      const respstatus = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/TransactionStatus.json`);
       if (res.ok) {
         const data = await res.json();
         setStore(Object.values(data));
@@ -49,6 +52,14 @@ function Home() {
         const resdata = await resp.json();
         setcurrentbalance(Object.values(resdata).pop());
         console.log("current balance ", currentbalance.CurrentBalance);
+      } else {
+        console.error("Failed to fetch data");
+      }
+      if (respstatus.ok) {
+        const statusdata = await respstatus.json();
+        setStatus(statusdata)
+        console.log("status data ", statusdata)
+        console.log("status data of key", Object.keys(status))
       } else {
         console.error("Failed to fetch data");
       }
@@ -144,7 +155,7 @@ function Home() {
               <div className='p-6 mb-6 bg-white rounded-lg shadow-md'>
                 <div className='flex flex-col items-start space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0'>
                   <div>
-                    <h2 className='text-xl font-bold'>Current Balance</h2>
+                    <h2 className='pb-2 mb-4 text-3xl font-semibold text-gray-800 border-b-4 '>Current Balance</h2>
                     <p className='text-3xl font-semibold text-green-500'>₹{balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</p>
                   </div>
                   <div className='relative'>
@@ -173,36 +184,54 @@ function Home() {
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-200'>
-                        {store.length > 1 ? (
+                        {store.length > 1 && status ? (
                           Object.values(store[1]).reverse().map((transaction, index) => (
-                            <tr key={index} className='bg-white'>
-                              <td className='px-4 py-2 text-sm font-medium text-gray-900 whitespace-nowrap'>{transaction.txnid}</td>
-                              {transaction.DateOfDebit && transaction.TimeOfDebit ? (
-                                <td className='px-4 py-2 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateOfDebit} {transaction.TimeOfDebit}</td>
-                              ) : (
-                                <td className='px-4 py-2 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateToCredit} {transaction.TimeToCredit}</td>
-                              )}
-                              {transaction.DateOfDebit && transaction.TimeOfDebit ? (
-                                <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>-₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                              ) : (
-                                <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>+₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-                              )}
-                              {transaction.Status === 'Pending' ? (
-                                <td className='px-4 py-2 text-sm font-medium text-orange-300 whitespace-nowrap'>
-                                  {transaction.Status}
-                                </td>
-                              ) : transaction.Status === 'Success' ? (
-                                <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
-                                  {transaction.Status}
-                                </td>
-                              ) : (
-                                <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>
-                                  {transaction.Status}
-                                </td>
-                              )}
+                            Object.keys(status).filter(key => key === transaction.txnid).map(key => {
+                              const nestedObject = status[key];
+                              const lastKey = Object.keys(nestedObject).pop();
+                              const lastItem = nestedObject[lastKey];
+                              return (
+                                <tr key={index} className='bg-white'>
+                                  <td className='px-4 py-2 text-sm font-medium text-gray-900 whitespace-nowrap'>{transaction.txnid}</td>
+                                  {transaction.DateOfDebit && transaction.TimeOfDebit ? (
+                                    <td className='px-4 py-2 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateOfDebit} {transaction.TimeOfDebit}</td>
+                                  ) : (
+                                    <td className='px-4 py-2 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateToCredit} {transaction.TimeToCredit}</td>
+                                  )}
+                                  {transaction.DateOfDebit && transaction.TimeOfDebit ? (
+                                    <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>-₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                  ) : (
+                                    <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>+₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                  )}
+                                  {transaction.DateOfDebit && transaction.TimeOfDebit ? (
+                                    lastItem.Status === 'Pending' ? (
+                                      <td className='px-4 py-2 text-sm font-medium text-orange-300 whitespace-nowrap'>
+                                        {lastItem.Status}
+                                      </td>
+                                    ) : lastItem.Status === 'Success' ? (
+                                      <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
+                                        {lastItem.Status}
+                                      </td>
+                                    ) : (
+                                      <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>
+                                        {lastItem.Status}
+                                      </td>
+                                    )
+                                  ) : (
+                                     
+                                      <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
+                                        Success
+                                      </td>
+                                    
+                                    
+                                  )}
 
-                            </tr>
+
+                                </tr>
+                              );
+                            })
                           ))
+
                         ) : (
                           <tr>
                             <td colSpan="3" className="px-4 py-2 text-sm text-center text-gray-500">No transactions found</td>

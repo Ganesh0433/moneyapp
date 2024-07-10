@@ -35,8 +35,7 @@ const QRCodeGenerator = () => {
     };
 
     const handleGenerateQRCode = () => {
-        ;
-        setShakeButton(true)
+        
         const { Amount, Message } = details;
         const upiUrl = `upi://pay?pa=mekalaganeshreddy796@oksbi&pn=M.Ganesh%20Reddy&am=${Amount}&cu=INR&aid=uGICAgICnh8qGLA&tn=${encodeURIComponent(Message)}`;
         setQrText(upiUrl);
@@ -85,7 +84,6 @@ const QRCodeGenerator = () => {
                 Amount,
                 Message,
                 userid: me,
-                 Status:"Pending"
             })
         };
         const option = {
@@ -100,7 +98,7 @@ const QRCodeGenerator = () => {
                 Amount,
                 Message,
                 userid: me,
-                Status:"Pending"
+               
             })
         };
         const statusoption = {
@@ -144,6 +142,7 @@ const QRCodeGenerator = () => {
             setProgress(100);
         }
     };
+    
 
     const areAllFieldsFilled = () => {
         const { Amount, Message, DateToCredit, TimeToCredit } = details;
