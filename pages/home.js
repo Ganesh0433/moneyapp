@@ -73,10 +73,10 @@ function Home() {
   }, [me]);
 
   var balance = currentbalance.CurrentBalance;
-  if(!balance){
-    balance=0
+  if (!balance) {
+    balance = 0
   }
-     
+
   var lastfetched = currentbalance.formattedDate;
 
   return (
@@ -169,6 +169,7 @@ function Home() {
                           <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Transaction ID</th>
                           <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Date & Time</th>
                           <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Amount</th>
+                          <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Status</th>
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-200'>
@@ -182,10 +183,24 @@ function Home() {
                                 <td className='px-4 py-2 text-sm text-gray-500 whitespace-nowrap'>{transaction.DateToCredit} {transaction.TimeToCredit}</td>
                               )}
                               {transaction.DateOfDebit && transaction.TimeOfDebit ? (
-                                <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>-₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                               ) : (
-                                <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
+                                <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>+₹{transaction.Amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                               )}
+                              {transaction.Status === 'Pending' ? (
+                                <td className='px-4 py-2 text-sm font-medium text-orange-300 whitespace-nowrap'>
+                                  {transaction.Status}
+                                </td>
+                              ) : transaction.Status === 'Success' ? (
+                                <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
+                                  {transaction.Status}
+                                </td>
+                              ) : (
+                                <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>
+                                  {transaction.Status}
+                                </td>
+                              )}
+
                             </tr>
                           ))
                         ) : (

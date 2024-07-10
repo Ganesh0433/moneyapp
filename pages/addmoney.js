@@ -35,7 +35,8 @@ const QRCodeGenerator = () => {
     };
 
     const handleGenerateQRCode = () => {
-        setLoading(true);
+        ;
+        setShakeButton(true)
         const { Amount, Message } = details;
         const upiUrl = `upi://pay?pa=mekalaganeshreddy796@oksbi&pn=M.Ganesh%20Reddy&am=${Amount}&cu=INR&aid=uGICAgICnh8qGLA&tn=${encodeURIComponent(Message)}`;
         setQrText(upiUrl);
@@ -83,7 +84,8 @@ const QRCodeGenerator = () => {
                 TimeOfDebit,
                 Amount,
                 Message,
-                userid: me
+                userid: me,
+                 Status:"Pending"
             })
         };
         const option = {
@@ -97,24 +99,40 @@ const QRCodeGenerator = () => {
                 TimeOfDebit,
                 Amount,
                 Message,
-                userid: me
+                userid: me,
+                Status:"Pending"
             })
         };
+        const statusoption = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                Status:"Pending"
+            })
+        };
+    
         try {
             const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/Transactions.json`, options);
             const response = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/RecentTransaction.json`, option);
+            const statusres = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/TransactionStatus/${txnid}.json`, statusoption);
             const uresponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/Alltransactions.json`, options);
-            if (res.ok && response.ok && uresponse.ok) {
+            if (res.ok && response.ok && uresponse.ok && statusres) {
                 setSuccessMessage('Payment Successful!');
-                setErrorMessage(''); // Clear error message on successful payment
-                // Reset the details state
+                const data = await response.json();
+                const transactionKey = Object.keys(data); 
+                console.log("transaction key is ",transactionKey)
+                setErrorMessage(''); 
                 setDetails({
                     Amount: '',
                     Message: '',
                     DateToCredit: '',
                     TimeToCredit: ''
                 });
-                setQrText(''); // Clear QR code
+                setQrText(''); 
+
+                
             } else {
                 throw new Error('Failed to store data.');
             }
@@ -236,7 +254,7 @@ const QRCodeGenerator = () => {
                         After completing the payment, please press the{' '}
                         <span className="font-semibold text-blue-600"> "Payment Successful" </span>
                     </p>
-                    <button
+                  <button
     onClick={PaymentSuccessful}
     className={`w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none ${shakeButton ? style.shake : ''}`}
     disabled={!areAllFieldsFilled()}
