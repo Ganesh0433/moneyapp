@@ -88,8 +88,11 @@ function Home() {
     balance = 0
   }
 
-  var lastfetched = currentbalance.formattedDate;
 
+  var lastfetched = currentbalance.formattedDate;
+  const login = () => {
+    router.push('/login');
+  };
   return (
     <div className='min-h-screen bg-white'>
       {loading ? (
@@ -124,31 +127,42 @@ function Home() {
           </div>
 
           <div className={`fixed top-0 left-0 w-96 h-full bg-white shadow-md transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
-            <button className='p-4' onClick={toggleSidebar}>
-              Close
-            </button>
-            <div className='p-4'>
-              <h2 className='mb-4 text-xl font-semibold text-gray-800'>Profile</h2>
-              {store[0] ? (
-                <>
-                  <div className='mb-4'>
-                    <p className='text-sm font-medium text-gray-600'>Name:</p>
-                    <p className='text-lg text-gray-900'>{store[0].Name}</p>
-                  </div>
-                  <div className='mb-4'>
-                    <p className='text-sm font-medium text-gray-600'>Phone Number:</p>
-                    <p className='text-lg text-gray-900'>{store[0].Phoneno}</p>
-                  </div>
-                  <div className='mb-4'>
-                    <p className='text-sm font-medium text-gray-600'>Email:</p>
-                    <p className='text-lg text-gray-900'>{store[0].Email}</p>
-                  </div>
-                </>
-              ) : (
-                <p>Facing Problem ...</p>
-              )}
-            </div>
-          </div>
+  <button className='p-4' onClick={toggleSidebar}>
+    Close
+  </button>
+
+  <div className='p-4'>
+    <h2 className='mb-4 text-xl font-semibold text-gray-800'>Profile</h2>
+    {store[0] ? (
+      <>
+        <div className='mb-4'>
+          <p className='text-sm font-medium text-gray-600'>Name:</p>
+          <p className='text-lg text-gray-900'>{store[0].Name}</p>
+        </div>
+        <div className='mb-4'>
+          <p className='text-sm font-medium text-gray-600'>Phone Number:</p>
+          <p className='text-lg text-gray-900'>{store[0].Phoneno}</p>
+        </div>
+        <div className='mb-4'>
+          <p className='text-sm font-medium text-gray-600'>Email:</p>
+          <p className='text-lg text-gray-900'>{store[0].Email}</p>
+        </div>
+      </>
+    ) : (
+      <p>Facing Problem ...</p>
+    )}
+  </div>
+
+  <button
+    className="absolute w-32 px-4 py-2 text-white transition duration-300 ease-in-out bg-black border-2 border-black rounded-md bottom-3 left-3 hover:bg-white hover:text-black"
+    onClick={() => {
+      localStorage.removeItem('token'); 
+      router.push('/login'); 
+    }}
+  >
+    Log Out
+  </button>
+</div>
 
           <div className={`p-4 transition-all duration-300 ${isSidebarOpen ? 'ml-96' : 'ml-0'}`}>
             <div className='container p-4 mx-auto'>
@@ -218,12 +232,12 @@ function Home() {
                                       </td>
                                     )
                                   ) : (
-                                     
-                                      <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
-                                        Success
-                                      </td>
-                                    
-                                    
+
+                                    <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
+                                      Success
+                                    </td>
+
+
                                   )}
 
 
