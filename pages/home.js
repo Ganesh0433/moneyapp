@@ -103,12 +103,12 @@ function Home() {
         <>
           <div className='flex justify-between p-4 bg-transparent'>
             <button className='cursor-pointer' onClick={toggleSidebar}>
-              <div className='flex p-2 mt-0 ml-3 bg-white rounded-lg shadow-md'>
+              <div className='flex p-2 mt-0 ml-3 transition-transform duration-300 ease-in-out bg-white rounded-lg shadow-md hover:scale-95'>
                 <div className='flex items-center w-6 h-6 p-1 mt-0 mr-2 bg-white border border-black rounded-full'>
                   <img src='profile.png' alt='Profile' />
                 </div>
                 {store[0] ? (
-                  <div className='font-medium text-black'>
+                  <div className='font-medium text-black '>
                     {store[0].Username}
                   </div>
                 ) : (
@@ -128,7 +128,7 @@ function Home() {
 
           <div className={`fixed top-0 left-0 w-96 h-full bg-white shadow-md transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
   <button className='p-4' onClick={toggleSidebar}>
-    Close
+    <img className='w-12 h-12 transition-transform duration-300 ease-in-out hover:scale-95' src='backbutton.png'></img>
   </button>
 
   <div className='p-4'>
@@ -187,14 +187,14 @@ function Home() {
                   </h2>
                 </div>
                 <div className='overflow-x-auto'>
-                  <div className='overflow-y-scroll max-h-96'>
+                  <div className='overflow-y-scroll max-h-60'>
                     <table className='min-w-full divide-y divide-gray-200'>
                       <thead className='bg-gray-100'>
                         <tr>
                           <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Transaction ID</th>
                           <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Date & Time</th>
                           <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Amount</th>
-                          <th className='px-4 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase'>Status</th>
+                          <th className='px-4 py-2 text-xs font-medium tracking-wider text-right text-gray-500 uppercase'>Status</th>
                         </tr>
                       </thead>
                       <tbody className='divide-y divide-gray-200'>
@@ -219,21 +219,21 @@ function Home() {
                                   )}
                                   {transaction.DateOfDebit && transaction.TimeOfDebit ? (
                                     lastItem.Status === 'Pending' ? (
-                                      <td className='px-4 py-2 text-sm font-medium text-orange-300 whitespace-nowrap'>
+                                      <td className='px-4 py-2 text-sm font-medium text-right text-orange-300 whitespace-nowrap'>
                                         {lastItem.Status}
                                       </td>
                                     ) : lastItem.Status === 'Success' ? (
-                                      <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
+                                      <td className='px-4 py-2 text-sm font-medium text-right text-green-500 whitespace-nowrap'>
                                         {lastItem.Status}
                                       </td>
                                     ) : (
-                                      <td className='px-4 py-2 text-sm font-medium text-red-500 whitespace-nowrap'>
+                                      <td className='px-4 py-2 text-sm font-medium text-right text-red-500 whitespace-nowrap'>
                                         {lastItem.Status}
                                       </td>
                                     )
                                   ) : (
 
-                                    <td className='px-4 py-2 text-sm font-medium text-green-500 whitespace-nowrap'>
+                                    <td className='px-4 py-2 text-sm font-medium text-right text-green-500 whitespace-nowrap'>
                                       Success
                                     </td>
 

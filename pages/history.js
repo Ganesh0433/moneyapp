@@ -65,7 +65,7 @@ function History() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100">
-      <h2 className="fixed z-10 w-full p-6 text-3xl font-semibold text-gray-800 bg-white border-b-4 top-4 ">
+      <h2 className="fixed z-10 w-full p-6 text-3xl font-semibold text-gray-800 bg-white xb top-4 ">
         Transaction History
       </h2>
       <div className="p-6 mt-20 overflow-x-auto">
