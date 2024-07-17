@@ -3,12 +3,6 @@ import QRCode from 'qrcode.react';
 import { useRouter } from 'next/router';
 import style from './home.module.css';
 import LoadingBar from 'react-top-loading-bar';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import TimePicker from 'react-time-picker';
-import 'react-time-picker/dist/TimePicker.css';
-import 'react-clock/dist/Clock.css';
-
 
 const QRCodeGenerator = () => {
     const router = useRouter();
@@ -17,7 +11,7 @@ const QRCodeGenerator = () => {
     const [details, setDetails] = useState({
         Amount: '',
         Message: '',
-        DateToCredit: null,
+        DateToCredit: '',
         TimeToCredit: ''
     });
 
@@ -40,15 +34,8 @@ const QRCodeGenerator = () => {
         setDetails({ ...details, [name]: value });
     };
 
-    const handleDateChange = (date) => {
-        setDetails({ ...details, DateToCredit: date });
-    };
-
-    const handleTimeChange = (time) => {
-        setDetails({ ...details, TimeToCredit: time });
-    };
-
     const handleGenerateQRCode = () => {
+        
         const { Amount, Message } = details;
         const upiUrl = `upi://pay?pa=mekalaganeshreddy796@oksbi&pn=M.Ganesh%20Reddy&am=${Amount}&cu=INR&aid=uGICAgICnh8qGLA&tn=${encodeURIComponent(Message)}`;
         setQrText(upiUrl);
@@ -56,28 +43,29 @@ const QRCodeGenerator = () => {
     };
 
     const PaymentSuccessful = async () => {
-        if (!details.DateToCredit || !details.TimeToCredit) {
-            setErrorMessage('Please select a valid date and time.');
-            return;
-        }
-
-        const now = new Date();
-        const selectedDate = new Date(details.DateToCredit);
-        const [hours, minutes] = details.TimeToCredit.split(':');
-        selectedDate.setHours(hours % 12 + (details.TimeToCredit.includes('PM') ? 12 : 0), minutes);
-
-        if (selectedDate <= now) {
-            setErrorMessage('The credit date and time must be in the future.');
+        if (!validateDate(details.DateToCredit) || !validateTime(details.TimeToCredit)) {
+            setErrorMessage('Please enter date in DD-MM-YYYY format and time in HH:MM AM/PM format.');
             return;
         }
 
         setLoading(true);
         setProgress(0);
-
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? 12 : 12;
+        const formattedHours = String(hours).padStart(2, '0');
+        const DateOfDebit = `${day}-${month}-${year}`;
+        const TimeOfDebit = `${formattedHours}:${minutes} ${ampm}`;
         const { Amount, Message, DateToCredit, TimeToCredit } = details;
 
         function getRandomThreeDigitInt() {
-            return Math.floor(Math.random() * 90000000) + 10000000;
+            return Math.floor(Math.random() * 900) + 100;
         }
 
         const randomno = getRandomThreeDigitInt();
@@ -91,26 +79,58 @@ const QRCodeGenerator = () => {
                 txnid,
                 DateToCredit,
                 TimeToCredit,
-                DateOfDebit: now.toISOString(),
-                TimeOfDebit: now.toLocaleTimeString(),
+                DateOfDebit,
+                TimeOfDebit,
                 Amount,
                 Message,
                 userid: me,
             })
         };
-
+        const option = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                txnid,
+                DateOfDebit,
+                TimeOfDebit,
+                Amount,
+                Message,
+                userid: me,
+               
+            })
+        };
+        const statusoption = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                Status:"Pending"
+            })
+        };
+    
         try {
             const res = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/Transactions.json`, options);
-            if (res.ok) {
+            const response = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/RecentTransaction.json`, option);
+            const statusres = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/userinfo/${me}/TransactionStatus/${txnid}.json`, statusoption);
+            const uresponse = await fetch(`https://moneylock-dde0a-default-rtdb.firebaseio.com/UserData/Alltransactions.json`, options);
+            if (res.ok && response.ok && uresponse.ok && statusres) {
                 setSuccessMessage('Payment Successful!');
-                setErrorMessage('');
+                const data = await response.json();
+                const transactionKey = Object.keys(data); 
+                console.log("transaction key is ",transactionKey)
+                setErrorMessage(''); 
                 setDetails({
                     Amount: '',
                     Message: '',
-                    DateToCredit: null,
+                    DateToCredit: '',
                     TimeToCredit: ''
                 });
-                setQrText('');
+                setQrText(''); 
+
+                
             } else {
                 throw new Error('Failed to store data.');
             }
@@ -122,10 +142,21 @@ const QRCodeGenerator = () => {
             setProgress(100);
         }
     };
+    
 
     const areAllFieldsFilled = () => {
         const { Amount, Message, DateToCredit, TimeToCredit } = details;
         return Amount && Message && DateToCredit && TimeToCredit;
+    };
+
+    const validateDate = (date) => {
+        const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
+        return dateRegex.test(date);
+    };
+
+    const validateTime = (time) => {
+        const timeRegex = /^(0[1-9]|1[0-2]):[0-5][0-9] (AM|PM)$/;
+        return timeRegex.test(time);
     };
 
     const checkAuth = () => {
@@ -186,13 +217,14 @@ const QRCodeGenerator = () => {
                         <label className="block mb-2 font-semibold text-gray-700" htmlFor="date">
                             Date to Credit:
                         </label>
-                        <DatePicker
-                            selected={details.DateToCredit}
-                            onChange={handleDateChange}
+                        <input
+                            name="DateToCredit"
                             className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-                            dateFormat="dd-MM-yyyy"
-                            minDate={new Date()}
-                            placeholderText="Select a date"
+                            id="date"
+                            type="text"
+                            placeholder="DD-MM-YYYY"
+                            value={details.DateToCredit}
+                            onChange={handleChange}
                             required
                         />
                     </div>
@@ -200,12 +232,14 @@ const QRCodeGenerator = () => {
                         <label className="block mb-2 font-semibold text-gray-700" htmlFor="time">
                             Time to Credit:
                         </label>
-                        <TimePicker
-                            onChange={handleTimeChange}
-                            value={details.TimeToCredit}
+                        <input
+                            name="TimeToCredit"
                             className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-                            disableClock={true}
-                            format="h:mm a"
+                            id="time"
+                            type="text"
+                            placeholder="HH:MM AM/PM"
+                            value={details.TimeToCredit}
+                            onChange={handleChange}
                             required
                         />
                     </div>
@@ -219,39 +253,42 @@ const QRCodeGenerator = () => {
                         After completing the payment, please press the{' '}
                         <span className="font-semibold text-blue-600"> "Payment Successful" </span>
                     </p>
-                    <button
-                        onClick={PaymentSuccessful}
-                        className={`w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none`}
-                        disabled={!areAllFieldsFilled()}
-                    >
-                        Payment Successful
-                    </button>
+                  <button
+    onClick={PaymentSuccessful}
+    className={`w-full px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-600 focus:outline-none ${shakeButton ? style.shake : ''}`}
+    disabled={!areAllFieldsFilled()}
+>
+    Payment Successful
+</button>
+
                 </div>
                 <div className="relative flex flex-col items-center justify-center w-full p-4 md:w-1/2">
                     <span className="px-4 py-2 mb-3 text-4xl font-bold text-gray-800 bg-white rounded-lg shadow-md">
                         Scan and Pay
                     </span>
-                    {qrText && (
+                    {qrText ? (
                         <QRCode
                             value={qrText}
-                            size={250}
-                            bgColor="#ffffff"
-                            fgColor="#000000"
-                            level="Q"
+                            size={256}
+                            level={"H"}
                             includeMargin={true}
-                            className="p-2 bg-white rounded-lg shadow-md"
                         />
-                    )}
-                    {!qrText && (
-                        <div className="w-64 h-64 bg-gray-200 rounded-lg"></div>
+                    ) : (
+                        <div className="flex items-center justify-center w-64 h-64 text-gray-500 border border-gray-300">
+                            QR code will appear here
+                        </div>
                     )}
                 </div>
             </div>
-            {successMessage && (
-                <p className="mt-4 text-center text-green-500 text-md">{successMessage}</p>
-            )}
             {errorMessage && (
-                <p className="mt-4 text-center text-red-500 text-md">{errorMessage}</p>
+                <div className="p-4 mt-4 text-red-700 bg-red-100 border border-red-400 rounded">
+                    {errorMessage}
+                </div>
+            )}
+            {successMessage && (
+                <div className="p-4 mt-4 text-green-700 bg-green-100 border border-green-400 rounded">
+                    {successMessage}
+                </div>
             )}
         </div>
     );
